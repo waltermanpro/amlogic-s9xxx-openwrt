@@ -139,22 +139,24 @@ custom_packages() {
 # Download luci-app-openclash
 openclash_api="https://api.github.com/repos/vernesong/OpenClash/releases/latest"
 
-openclash_ipk_url="$(curl -s "${openclash_api}" \
-    | grep -oE '"browser_download_url": "[^"]+luci-app-openclash[^"]+\.ipk"' \
+openclash_apk_url="$(
+    curl -fsSL "${openclash_api}" \
+    | grep -oE '"browser_download_url":[[:space:]]*"[^"]+luci-app-openclash[^"]+\.apk"' \
     | head -n1 \
-    | cut -d'"' -f4)"
+    | cut -d'"' -f4
+)"
 
-if [[ -n "${openclash_ipk_url}" ]]; then
-    curl -fsSOJL "${openclash_ipk_url}"
-    [[ "${?}" -eq "0" ]] && \
-        echo -e "${INFO} OpenClash downloaded successfully."
+if [[ -n "${openclash_apk_url}" ]]; then
+    echo -e "${INFO} OpenClash APK URL: ${openclash_apk_url}"
+
+    if curl -fsSOJL "${openclash_apk_url}"; then
+        echo -e "${INFO} OpenClash APK downloaded successfully."
+    else
+        echo -e "${WARNING} Failed to download OpenClash APK."
+    fi
 else
-    echo -e "${WARNING} OpenClash IPK download URL not found."
+    echo -e "${WARNING} OpenClash APK download URL not found."
 fi
-    # Remove the packages that are not needed based on the Image Builder type (APK or OPKG)
-    if grep -q "CONFIG_USE_APK=y" ../.config; then
-        echo -e "${INFO} APK-based ImageBuilder detected. Removing .ipk files..."
-        rm -f *.ipk
 
         # Fix the filename format of APK files to be compatible with Image Builder requirements.
         # Image Builder requires that the commit hash in the filename is preceded by a tilde (~) instead of a dot (.).
