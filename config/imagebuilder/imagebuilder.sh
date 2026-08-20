@@ -136,7 +136,21 @@ custom_packages() {
 
     # Download other luci-app-xxx
     # ......
+# Download luci-app-openclash
+openclash_api="https://api.github.com/repos/vernesong/OpenClash/releases/latest"
 
+openclash_ipk_url="$(curl -s "${openclash_api}" \
+    | grep -oE '"browser_download_url": "[^"]+luci-app-openclash[^"]+\.ipk"' \
+    | head -n1 \
+    | cut -d'"' -f4)"
+
+if [[ -n "${openclash_ipk_url}" ]]; then
+    curl -fsSOJL "${openclash_ipk_url}"
+    [[ "${?}" -eq "0" ]] && \
+        echo -e "${INFO} OpenClash downloaded successfully."
+else
+    echo -e "${WARNING} OpenClash IPK download URL not found."
+fi
     # Remove the packages that are not needed based on the Image Builder type (APK or OPKG)
     if grep -q "CONFIG_USE_APK=y" ../.config; then
         echo -e "${INFO} APK-based ImageBuilder detected. Removing .ipk files..."
