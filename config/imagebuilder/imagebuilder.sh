@@ -139,13 +139,15 @@ custom_packages() {
 # Download luci-app-openclash
 openclash_api="https://api.github.com/repos/vernesong/OpenClash/releases/latest"
 
+# Get APK download URL
 openclash_apk_url="$(
     curl -fsSL "${openclash_api}" \
-    | grep -oE '"browser_download_url":[[:space:]]*"[^"]+luci-app-openclash[^"]+\.apk"' \
-    | head -n1 \
-    | cut -d'"' -f4
+    | grep -oE '"browser_download_url":"[^"]+luci-app-openclash[^"]+\.apk"' \
+    | cut -d'"' -f4 \
+    | head -n1
 )"
 
+# Download APK
 if [[ -n "${openclash_apk_url}" ]]; then
     echo -e "${INFO} OpenClash APK URL: ${openclash_apk_url}"
 
@@ -158,6 +160,26 @@ else
     echo -e "${WARNING} OpenClash APK download URL not found."
 fi
 
+# Get IPK download URL
+openclash_ipk_url="$(
+    curl -fsSL "${openclash_api}" \
+    | grep -oE '"browser_download_url":"[^"]+luci-app-openclash[^"]+\.ipk"' \
+    | cut -d'"' -f4 \
+    | head -n1
+)"
+
+# Download IPK
+if [[ -n "${openclash_ipk_url}" ]]; then
+    echo -e "${INFO} OpenClash IPK URL: ${openclash_ipk_url}"
+
+    if curl -fsSOJL "${openclash_ipk_url}"; then
+        echo -e "${INFO} OpenClash IPK downloaded successfully."
+    else
+        echo -e "${WARNING} Failed to download OpenClash IPK."
+    fi
+else
+    echo -e "${WARNING} OpenClash IPK download URL not found."
+fi
         # Fix the filename format of APK files to be compatible with Image Builder requirements.
         # Image Builder requires that the commit hash in the filename is preceded by a tilde (~) instead of a dot (.).
         for file in *.apk; do
